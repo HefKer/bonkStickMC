@@ -42,3 +42,6 @@ replay_*.log
 # Nix / direnv
 .direnv/
 result
+
+# runtime logs (unit tests boot log4j in the repo root)
+logs/
