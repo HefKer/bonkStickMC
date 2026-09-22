@@ -2,7 +2,9 @@ package com.hefker.bonkstick.loot;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import net.minecraft.resources.ResourceLocation;
 
@@ -36,6 +38,14 @@ public record LootChests(Map<ResourceLocation, Double> chances) {
 	/** Whether chests from loot table {@code id} should get a Bonk Stick pool at all. */
 	public boolean isLootChest(ResourceLocation id) {
 		return chanceFor(id) > 0.0;
+	}
+
+	/**
+	 * The listed loot tables that don't exist, in file order: {@code exists} says which ids the game actually loaded.
+	 * These are typos or tables from mods that aren't installed, and simply never get a Bonk Stick.
+	 */
+	public List<ResourceLocation> unknownTables(Predicate<ResourceLocation> exists) {
+		return chances.keySet().stream().filter(exists.negate()).toList();
 	}
 
 	private static Map<ResourceLocation, Double> defaultChances() {

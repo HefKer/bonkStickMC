@@ -1,9 +1,11 @@
 package com.hefker.bonkstick.loot;
 
+import com.hefker.bonkstick.BonkStick;
 import com.hefker.bonkstick.item.ModItems;
 
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
@@ -32,12 +34,23 @@ public final class LootChestPools {
 				.add(LootItem.lootTableItem(ModItems.BONK_STICK));
 	}
 
-	/** Adds the Bonk Stick pool to every loot table {@code lootChests} lists with a chance above 0, as tables load. */
+	/**
+	 * Adds the Bonk Stick pool to every loot table {@code lootChests} lists with a chance above 0, as tables load, and
+	 * notes in the debug log any listed table that doesn't exist.
+	 */
 	public static void initialize(LootChests lootChests) {
 		LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) -> {
 			double chance = lootChests.chanceFor(key.location());
 			if (chance > 0.0) {
 				tableBuilder.withPool(pool(chance));
+			}
+		});
+
+		// MODIFY only runs for tables that exist, so a mistyped or uninstalled mod's id would otherwise vanish
+		// silently. Runs again on every /reload.
+		LootTableEvents.ALL_LOADED.register((resourceManager, lootRegistry) -> {
+			for (ResourceLocation id : lootChests.unknownTables(lootRegistry::containsKey)) {
+				BonkStick.LOGGER.debug("Loot Chest table {} from the config doesn't exist, ignoring it", id);
 			}
 		});
 	}

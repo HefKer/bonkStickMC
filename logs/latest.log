@@ -1,5 +1,5 @@
-[23:45:48] [Test worker/INFO]: Wrote the default Bonk Stick config to /tmp/junit-10272529122240849803/config/bonkstick.json
-[23:45:48] [Test worker/WARN]: Couldn't read /tmp/junit-5382081713728714828/bonkstick.json, using the default Bonk Stick config: java.io.IOException: Is a directory
-[23:45:48] [Test worker/WARN]: Couldn't read /tmp/junit-1873074056765434308/bonkstick.json, using the default Bonk Stick config: java.nio.charset.MalformedInputException: Input length = 1
-[23:45:48] [Test worker/WARN]: /tmp/junit-3193191354886294371/bonkstick.json: not valid JSON (End of input at line 1 column 29 path $.bonk.bonkStrength), using the defaults
-[23:45:48] [Test worker/WARN]: /tmp/junit-3193191354886294371/bonkstick.json was left as it is. Fix it, or delete it to get a fresh default file on the next start.
+[23:46:10] [Test worker/INFO]: Wrote the default Bonk Stick config to /tmp/junit-16551988212137600800/config/bonkstick.json
+[23:46:10] [Test worker/WARN]: Couldn't read /tmp/junit-15845614579867012031/bonkstick.json, using the default Bonk Stick config: java.io.IOException: Is a directory
+[23:46:10] [Test worker/WARN]: Couldn't read /tmp/junit-3701466786946293794/bonkstick.json, using the default Bonk Stick config: java.nio.charset.MalformedInputException: Input length = 1
+[23:46:10] [Test worker/WARN]: /tmp/junit-6954468817996079770/bonkstick.json: not valid JSON (End of input at line 1 column 29 path $.bonk.bonkStrength), using the defaults
+[23:46:10] [Test worker/WARN]: /tmp/junit-6954468817996079770/bonkstick.json was left as it is. Fix it, or delete it to get a fresh default file on the next start.
