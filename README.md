@@ -1,9 +1,11 @@
-# Fabric mod template (NixOS)
+# Bonk Stick
 
-A starting point for Fabric mods on NixOS: the upstream
-[fabric-example-mod](https://github.com/FabricMC/fabric-example-mod) for Minecraft
-1.21.1, plus a flake devShell that makes `runClient` actually work without an FHS
-wrapper.
+A Fabric mod for Minecraft 1.21.1 that adds a bonk stick: it applies knockback with no
+damage ticks. See `CONTEXT.md` for the glossary.
+
+Built from the upstream
+[fabric-example-mod](https://github.com/FabricMC/fabric-example-mod), plus a flake
+devShell that makes `runClient` actually work on NixOS without an FHS wrapper.
 
 ## Versions
 
@@ -31,10 +33,6 @@ direnv allow     # or: nix develop
 ./gradlew build
 ./gradlew runClient
 ```
-
-Then rename the placeholders: `com.example` / `modid` appear in `gradle.properties`,
-`settings.gradle`, `build.gradle`, `fabric.mod.json`, both `*.mixins.json` files, the
-`src/` package paths, and the `assets/modid/` directory.
 
 ## Why the devShell is shaped like this
 
@@ -87,4 +85,4 @@ Java extension, which prefers a `jdtls` on `$PATH` over downloading its own.
 
 ## License
 
-CC0, same as the upstream template it's based on.
+MIT. See `LICENSE`.
