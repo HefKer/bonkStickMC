@@ -15,7 +15,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"modid" {
+		"bonkstick" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}
