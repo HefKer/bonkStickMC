@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 
+import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -106,6 +107,7 @@ public final class BonkHandler {
 		}
 
 		BonkStrength.Push push = BonkStrength.compute(charge, bonker.isSprinting(), settings.strength());
+		Vec3 motionBefore = bonkable.getDeltaMovement();
 		boolean respectResistance = settings.respectKnockbackResistance();
 
 		// Away from the Bonker, like the push every vanilla hit gives from hurt()...
@@ -118,10 +120,23 @@ public final class BonkHandler {
 		bonker.setDeltaMovement(bonker.getDeltaMovement().multiply(0.6, 1.0, 0.6));
 		bonker.setSprinting(false);
 
-		// hurt() would normally mark this; it makes the server send the new motion right away.
-		bonkable.hurtMarked = true;
+		sendMotion(bonkable, motionBefore);
 
 		BonkCallback.EVENT.invoker().onBonk(bonker, bonkable, BonkCallback.Outcome.LANDED);
+	}
+
+	/**
+	 * Makes sure clients see the push. A player's client owns its own movement, so, like vanilla after a hit, the Bonked
+	 * player is sent the new motion directly and the server's copy goes back to what it was. For everything else,
+	 * {@code hurtMarked} (normally set by {@code hurt()}) makes the server broadcast the new motion on its next update.
+	 */
+	private static void sendMotion(LivingEntity bonkable, Vec3 motionBefore) {
+		if (bonkable instanceof ServerPlayer bonkedPlayer) {
+			bonkedPlayer.connection.send(new ClientboundSetEntityMotionPacket(bonkedPlayer));
+			bonkedPlayer.setDeltaMovement(motionBefore);
+		} else {
+			bonkable.hurtMarked = true;
+		}
 	}
 
 	/** Targets vanilla hits can't touch either: creative-mode players and entities tagged invulnerable. */
