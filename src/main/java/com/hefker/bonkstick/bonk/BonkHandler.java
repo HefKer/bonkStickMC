@@ -69,7 +69,7 @@ public final class BonkHandler {
 		}
 
 		BonkSettings settings = BonkSettings.current();
-		boolean playersProtected = settings.respectPvp() && !bonker.server.isPvpAllowed();
+		boolean playersProtected = settings.respectPvpSetting() && !bonker.server.isPvpAllowed();
 		LivingEntity bonkable = Bonkables.resolve(target, playersProtected);
 
 		if (bonkable == null) {
