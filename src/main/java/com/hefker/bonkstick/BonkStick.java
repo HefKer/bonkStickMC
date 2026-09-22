@@ -7,6 +7,7 @@ import com.hefker.bonkstick.bonk.BonkSettings;
 import com.hefker.bonkstick.config.BonkConfig;
 import com.hefker.bonkstick.config.BonkConfigFile;
 import com.hefker.bonkstick.item.ModItems;
+import com.hefker.bonkstick.loot.LootChestPools;
 import com.hefker.bonkstick.sound.ModSounds;
 
 import net.fabricmc.api.ModInitializer;
@@ -36,6 +37,7 @@ public class BonkStick implements ModInitializer {
 		ModItems.initialize();
 		ModSounds.initialize();
 		BonkHandler.initialize();
+		LootChestPools.initialize(config.loot());
 	}
 
 	public static ResourceLocation id(String path) {
