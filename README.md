@@ -3,11 +3,13 @@
 A Fabric mod for Minecraft 1.21.1 that adds a bonk stick: it applies knockback with no
 damage ticks. See `CONTEXT.md` for the glossary.
 
+## Development
+
 Built from the upstream
 [fabric-example-mod](https://github.com/FabricMC/fabric-example-mod), plus a flake
 devShell that makes `runClient` actually work on NixOS without an FHS wrapper.
 
-## Versions
+### Versions
 
 | | |
 |---|---|
@@ -17,6 +19,7 @@ devShell that makes `runClient` actually work on NixOS without an FHS wrapper.
 | Loom | 1.17.21 |
 | Gradle | 9.5.1 (via wrapper) |
 | Java | 21 |
+| JUnit | 5.11.4 (tests only) |
 
 Mappings are Mojang official (`loom.officialMojangMappings()`), not Yarn. Change the
 `mappings` line in `build.gradle` if you want Yarn instead.
@@ -26,15 +29,20 @@ declares for 1.21.1 (`javaVersion.majorVersion`); it's a floor, not an exact pin
 it needs to come from the devShell — Gradle's toolchain auto-provisioning downloads
 prebuilt JDK tarballs that don't run on NixOS.
 
-## Use it
+### Build and run
 
 ```sh
 direnv allow     # or: nix develop
 ./gradlew build
 ./gradlew runClient
+./gradlew test    # unit tests (config parsing, Bonk Strength, Loot Chests)
 ```
 
-## Why the devShell is shaped like this
+The built jar lands in `build/libs/`. The top-level `assets/` folder (the README gif and
+the original sound download) is not part of the mod and never goes into the jar; the
+mod's own resources live in `src/main/resources/`.
+
+### Why the devShell is shaped like this
 
 Minecraft on NixOS fails in a specific way. LWJGL ships its native `.so` files inside
 its jars, extracts them to a temp directory at runtime, and `dlopen`s their
@@ -55,7 +63,7 @@ JDK has no FHS fallback, so nothing resolves. The devShell answers that with
 The list mirrors the one in nixpkgs' `prismlauncher` wrapper, which is the best
 maintained reference for this.
 
-## Gotchas
+### Gotchas
 
 **Don't mix nixpkgs `gradle` with `./gradlew`.** Gradle caches its extracted natives
 under `$GRADLE_USER_HOME` keyed on version alone, ignoring file contents. nixpkgs'
