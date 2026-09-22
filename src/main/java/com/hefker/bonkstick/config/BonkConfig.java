@@ -3,6 +3,7 @@ package com.hefker.bonkstick.config;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +18,9 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 
 import com.hefker.bonkstick.bonk.BonkSettings;
+import com.hefker.bonkstick.loot.LootChests;
+
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * Everything in {@code config/bonkstick.json}, and how it turns into and out of JSON.
@@ -29,17 +33,25 @@ import com.hefker.bonkstick.bonk.BonkSettings;
  *     "bonkStrength": 1.0,
  *     "respectKnockbackResistance": true,
  *     "respectPvpSetting": false
+ *   },
+ *   "loot": {
+ *     "minecraft:chests/simple_dungeon": 0.2,
+ *     "minecraft:chests/stronghold_corridor": 0.2
  *   }
  * }
  * }</pre>
+ *
+ * <p>The {@code "loot"} section maps loot-table ids to the chance (0 to 1) that a chest from that table holds a Bonk
+ * Stick. It's taken as a whole: listing it replaces the default Loot Chests, leaving it out keeps them.
  *
  * <p>Parsing never throws. Anything it can't use is reported in {@link Parsed#warnings()} and replaced by its default:
  * a broken file falls back as a whole, a bad or missing value falls back on its own.
  *
  * @param bonk the Bonk section
+ * @param loot the Loot Chest section
  */
-public record BonkConfig(BonkSettings bonk) {
-	public static final BonkConfig DEFAULTS = new BonkConfig(BonkSettings.DEFAULTS);
+public record BonkConfig(BonkSettings bonk, LootChests loot) {
+	public static final BonkConfig DEFAULTS = new BonkConfig(BonkSettings.DEFAULTS, LootChests.DEFAULTS);
 
 	/** Section holding the Bonk knobs. */
 	public static final String BONK = "bonk";
@@ -52,7 +64,15 @@ public record BonkConfig(BonkSettings bonk) {
 	/** Highest allowed {@value #BONK_STRENGTH}. */
 	public static final double MAX_BONK_STRENGTH = 5.0;
 
-	private static final Set<String> SECTIONS = Set.of(BONK);
+	/** Section mapping Loot Chest loot-table ids to their Bonk Stick chance. */
+	public static final String LOOT = "loot";
+
+	/** Lowest allowed Loot Chest chance: 0 means the chest never holds a Bonk Stick. */
+	public static final double MIN_CHANCE = 0.0;
+	/** Highest allowed Loot Chest chance: 1 means every such chest holds one. */
+	public static final double MAX_CHANCE = 1.0;
+
+	private static final Set<String> SECTIONS = Set.of(BONK, LOOT);
 	private static final Set<String> BONK_KEYS = Set.of(BONK_STRENGTH, RESPECT_KNOCKBACK_RESISTANCE, RESPECT_PVP_SETTING);
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -86,7 +106,8 @@ public record BonkConfig(BonkSettings bonk) {
 		JsonObject object = root.getAsJsonObject();
 		warnUnknownKeys(object, SECTIONS, "", warnings);
 		BonkSettings bonk = parseBonk(section(object, BONK, warnings), warnings);
-		return new Parsed(new BonkConfig(bonk), warnings);
+		LootChests loot = parseLoot(section(object, LOOT, warnings), warnings);
+		return new Parsed(new BonkConfig(bonk, loot), warnings);
 	}
 
 	/** The JSON written for this config, pretty-printed with a trailing newline. */
@@ -96,14 +117,62 @@ public record BonkConfig(BonkSettings bonk) {
 		bonkSection.addProperty(RESPECT_KNOCKBACK_RESISTANCE, bonk.respectKnockbackResistance());
 		bonkSection.addProperty(RESPECT_PVP_SETTING, bonk.respectPvpSetting());
 
+		JsonObject lootSection = new JsonObject();
+		for (Map.Entry<ResourceLocation, Double> entry : loot.chances().entrySet()) {
+			lootSection.addProperty(entry.getKey().toString(), entry.getValue());
+		}
+
 		JsonObject root = new JsonObject();
 		root.add(BONK, bonkSection);
+		root.add(LOOT, lootSection);
 		return GSON.toJson(root) + "\n";
 	}
 
 	/** Clamps a Bonk Strength multiplier into the allowed range. */
 	public static double clampBonkStrength(double strength) {
 		return Math.max(MIN_BONK_STRENGTH, Math.min(MAX_BONK_STRENGTH, strength));
+	}
+
+	/** Clamps a Loot Chest chance into 0 to 1. */
+	public static double clampChance(double chance) {
+		return Math.max(MIN_CHANCE, Math.min(MAX_CHANCE, chance));
+	}
+
+	private static LootChests parseLoot(JsonObject section, List<String> warnings) {
+		if (section == null) {
+			return LootChests.DEFAULTS;
+		}
+
+		String path = LOOT + ".";
+		Map<ResourceLocation, Double> chances = new LinkedHashMap<>();
+		for (Map.Entry<String, JsonElement> entry : section.entrySet()) {
+			String key = entry.getKey();
+			ResourceLocation id = ResourceLocation.tryParse(key);
+			if (id == null) {
+				warnings.add(path + key + " is not a valid loot-table id, skipped");
+				continue;
+			}
+
+			JsonElement element = entry.getValue();
+			JsonPrimitive raw = element.isJsonPrimitive() ? element.getAsJsonPrimitive() : null;
+			if (raw == null || !raw.isNumber() || !Double.isFinite(raw.getAsDouble())) {
+				warnings.add(path + key + " should be a chance from " + MIN_CHANCE + " to " + MAX_CHANCE + ", skipped");
+				continue;
+			}
+
+			double value = raw.getAsDouble();
+			double chance = clampChance(value);
+			if (chance != value) {
+				warnings.add(path + key + " " + value + " is outside " + MIN_CHANCE + " to " + MAX_CHANCE
+						+ ", clamped to " + chance);
+			}
+
+			if (chances.put(id, chance) != null) {
+				warnings.add(path + key + " lists loot table " + id + " a second time, using this later chance");
+			}
+		}
+
+		return new LootChests(chances);
 	}
 
 	private static BonkSettings parseBonk(JsonObject section, List<String> warnings) {
