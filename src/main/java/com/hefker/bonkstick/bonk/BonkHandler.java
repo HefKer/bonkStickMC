@@ -43,6 +43,7 @@ public final class BonkHandler {
 
 	public static void initialize() {
 		AttackEntityCallback.EVENT.register(BonkHandler::onAttack);
+		BonkSound.initialize();
 	}
 
 	private static InteractionResult onAttack(

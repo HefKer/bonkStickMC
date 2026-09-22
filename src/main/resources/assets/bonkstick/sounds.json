@@ -1,0 +1,8 @@
+{
+	"bonk": {
+		"subtitle": "subtitles.bonkstick.bonk",
+		"sounds": [
+			"bonkstick:bonk"
+		]
+	}
+}
