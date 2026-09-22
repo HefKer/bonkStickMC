@@ -13,7 +13,11 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -29,6 +33,9 @@ import net.minecraft.world.phys.Vec3;
  * packet); the server does the Bonk.
  */
 public final class BonkHandler {
+	/** Set while the server replays a swing at a non-Bonkable as an empty-hand hit, so the callback lets it through. */
+	private static boolean emptyHandHitInProgress;
+
 	private BonkHandler() {
 	}
 
@@ -54,7 +61,7 @@ public final class BonkHandler {
 			return InteractionResult.SUCCESS;
 		}
 
-		if (!(player instanceof ServerPlayer bonker)) {
+		if (emptyHandHitInProgress || !(player instanceof ServerPlayer bonker)) {
 			return InteractionResult.PASS;
 		}
 
@@ -63,10 +70,11 @@ public final class BonkHandler {
 		LivingEntity bonkable = Bonkables.resolve(target, playersProtected);
 
 		if (bonkable == null) {
-			return InteractionResult.PASS;
+			emptyHandHit(bonker, target);
+		} else {
+			bonk(bonker, bonkable, settings);
 		}
 
-		bonk(bonker, bonkable, settings);
 		return InteractionResult.SUCCESS;
 	}
 
@@ -137,5 +145,31 @@ public final class BonkHandler {
 				motion.x / 2.0 - push.x,
 				target.onGround() ? Math.min(0.4, motion.y / 2.0 + strength) : motion.y,
 				motion.z / 2.0 - push.z);
+	}
+
+	/**
+	 * Swinging the Bonk Stick at anything that isn't Bonkable works like an empty-hand hit, so boats and minecarts
+	 * still break. The stick itself has 0 attack damage, and vanilla ignores a 0-damage hit entirely, so this takes the
+	 * stick's damage modifier off for the length of one vanilla attack.
+	 */
+	private static void emptyHandHit(ServerPlayer bonker, Entity target) {
+		AttributeInstance attackDamage = bonker.getAttribute(Attributes.ATTACK_DAMAGE);
+		AttributeModifier stickDamage = attackDamage == null ? null : attackDamage.getModifier(Item.BASE_ATTACK_DAMAGE_ID);
+
+		if (stickDamage != null) {
+			attackDamage.removeModifier(stickDamage.id());
+		}
+
+		emptyHandHitInProgress = true;
+
+		try {
+			bonker.attack(target);
+		} finally {
+			emptyHandHitInProgress = false;
+
+			if (stickDamage != null) {
+				attackDamage.addTransientModifier(stickDamage);
+			}
+		}
 	}
 }
