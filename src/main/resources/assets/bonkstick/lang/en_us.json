@@ -1,4 +1,5 @@
 {
 	"item.bonkstick.bonk_stick": "Bonk Stick",
-	"item.bonkstick.bonk_stick.tooltip": "Stale. Deals no damage, only dignity."
+	"item.bonkstick.bonk_stick.tooltip": "Stale. Deals no damage, only dignity.",
+	"subtitles.bonkstick.bonk": "Bonk!"
 }

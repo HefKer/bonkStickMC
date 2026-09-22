@@ -2,6 +2,7 @@ package com.hefker.bonkstick;
 
 import com.hefker.bonkstick.bonk.BonkHandler;
 import com.hefker.bonkstick.item.ModItems;
+import com.hefker.bonkstick.sound.ModSounds;
 
 import net.fabricmc.api.ModInitializer;
 
@@ -21,6 +22,7 @@ public class BonkStick implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ModItems.initialize();
+		ModSounds.initialize();
 		BonkHandler.initialize();
 	}
 
