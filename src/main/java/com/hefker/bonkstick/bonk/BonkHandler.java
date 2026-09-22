@@ -12,6 +12,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityEvent;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -95,6 +96,15 @@ public final class BonkHandler {
 			return;
 		}
 
+		// A raised shield facing the Bonker stops the Bonk completely. Vanilla's own facing check decides, and entity
+		// event 29 makes nearby clients play the shield-block sound, exactly as for a blocked vanilla hit. Unlike a
+		// blocked hit, the shield takes no durability damage and the Bonker isn't bounced back.
+		if (bonkable.isDamageSourceBlocked(source)) {
+			bonkable.level().broadcastEntityEvent(bonkable, EntityEvent.ATTACK_BLOCKED);
+			BonkCallback.EVENT.invoker().onBonk(bonker, bonkable, BonkCallback.Outcome.BLOCKED);
+			return;
+		}
+
 		BonkStrength.Push push = BonkStrength.compute(charge, bonker.isSprinting(), settings.strength());
 		boolean respectResistance = settings.respectKnockbackResistance();
 
@@ -110,6 +120,8 @@ public final class BonkHandler {
 
 		// hurt() would normally mark this; it makes the server send the new motion right away.
 		bonkable.hurtMarked = true;
+
+		BonkCallback.EVENT.invoker().onBonk(bonker, bonkable, BonkCallback.Outcome.LANDED);
 	}
 
 	/** Targets vanilla hits can't touch either: creative-mode players and entities tagged invulnerable. */
