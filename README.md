@@ -127,6 +127,9 @@ Built from the upstream
 [fabric-example-mod](https://github.com/FabricMC/fabric-example-mod), plus a flake
 devShell that makes `runClient` actually work on NixOS without an FHS wrapper.
 
+The domain terms used in the code (Bonk, Bonkable, Charge, Loot Chest…) are defined in
+`CONTEXT.md`; design decisions are in `docs/adr/`.
+
 ### Versions
 
 | | |
