@@ -209,6 +209,16 @@ up JAVA_TOOL_OPTIONS` to stderr.
 **Editors.** `jdtls` is in the shell. Zed has no built-in Java support — install the
 Java extension, which prefers a `jdtls` on `$PATH` over downloading its own.
 
-## License
+## Credits and licenses
 
-MIT. See `LICENSE`.
+**Mod code:** MIT, see [`LICENSE`](LICENSE).
+
+**Bonk Sound:** "Bonk hitsound (real)" by Demomium, from
+<https://gamebanana.com/sounds/47482>, licensed under
+[CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/).
+
+The sound is not covered by the MIT license. It ships in the mod as
+`src/main/resources/assets/bonkstick/sounds/bonk.ogg`, and the original download is kept
+in `assets/hitsound_19ad3.mp3`. CC BY-NC-ND means you can share it with credit, but not
+commercially and not in modified form. If you fork the mod and need different terms,
+swap in another sound.
