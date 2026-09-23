@@ -15,7 +15,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.hefker.bonkstick.BonkStick"
+			"dev.hefker.bonkstick.BonkStick"
 		]
 	},
 	"depends": {
